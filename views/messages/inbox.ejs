@@ -1,0 +1,49 @@
+<%- include("../partials/header", { user }) %>
+
+<style>
+  .chat-list {
+    max-width: 600px;
+    margin: auto;
+  }
+
+  .chat-user {
+    background-color: #1e1e1e;
+    color: #eee;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.3s ease;
+  }
+
+  .chat-user:hover {
+    background-color: #333;
+  }
+
+  .chat-user h5 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .chat-user small {
+    color: #aaa;
+  }
+</style>
+
+<div class="container mt-4 chat-list">
+  <h3 class="mb-4 text-center">📨 Messages</h3>
+
+  <% if (users.length === 0) { %>
+    <p class="text-center text-muted">No conversations yet.</p>
+  <% } %>
+
+  <% users.forEach(u => { %>
+    <a href="/messages/<%= u.user_id %>" class="chat-user">
+      <h5><%= u.name %></h5>
+      <small>Click to view chat</small>
+    </a>
+  <% }) %>
+</div>
+
+<%- include("../partials/footer") %>

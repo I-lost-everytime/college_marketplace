@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Book Marketplace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #e6f1ff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .login-card {
+      max-width: 400px;
+      width: 100%;
+      background-color: #1e1e2f;
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+      transition: 0.3s ease-in-out;
+      border: 2px solid transparent;
+    }
+
+    .login-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 30px #00e5ff;
+      border-color: #00e5ff;
+    }
+
+    h2 {
+      color: #00e5ff;
+      text-shadow: 0 0 5px rgba(0, 229, 255, 0.6);
+    }
+
+    .form-control {
+      background-color: #2c2f3a;
+      color: #e6f1ff;
+      border: 1px solid #555;
+    }
+
+    .form-control::placeholder {
+      color: #bbb;
+    }
+
+    .form-control:focus {
+      border-color: #00e5ff;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+      background-color: #2c2f3a;
+    }
+
+    .btn-login {
+      background-color: #00e5ff;
+      color: #000;
+      border: none;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      transition: 0.3s ease;
+    }
+
+    .btn-login:hover {
+      background-color: #00c4cc;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
+    }
+
+    .link-text {
+      color: #00e5ff;
+    }
+
+    .link-text:hover {
+      color: #80faff;
+      text-decoration: underline;
+    }
+
+    .alert-danger {
+      background-color: #ff4c4c;
+      color: #fff;
+      border: none;
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+
+  <div class="card login-card">
+    <h2 class="mb-4 text-center">Login</h2>
+
+    <% if (error) { %>
+      <div class="alert alert-danger text-center"><%= error %></div>
+    <% } %>
+
+    <form action="/login" method="POST">
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" name="password" class="form-control" placeholder="Password" required>
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-login">Login</button>
+      </div>
+    </form>
+
+    <p class="mt-3 text-center">Don't have an account? <a href="/register" class="link-text">Register</a></p>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

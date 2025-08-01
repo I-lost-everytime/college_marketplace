@@ -1,0 +1,92 @@
+<%- include("../partials/header", { user }) %>
+
+<style>
+  .chat-box {
+    height: 420px;
+    overflow-y: auto;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #444;
+  }
+
+  .message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+  }
+
+  .sent {
+    background-color: #4CAF50;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  .received {
+    background-color: #2a2a2a;
+    color: #eee;
+    align-self: flex-start;
+    margin-right: auto;
+  }
+
+  .timestamp {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message-input {
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 1px solid #555;
+    background-color: #1e1e1e;
+    color: white;
+  }
+
+  .btn-send {
+    border-radius: 20px;
+  }
+</style>
+
+<div class="container mt-4">
+  <h4 class="mb-3 text-light">Chat with <%= chatPartner.name %></h4>
+
+  <div class="chat-box d-flex flex-column" id="chatBox">
+    <% messages.forEach(m => { %>
+      <div class="chat-container">
+        <div class="message <%= m.sender_id === user.id ? 'sent' : 'received' %>">
+          <%= m.content %>
+          <div class="timestamp">
+            <%= new Date(m.timestamp).toLocaleString("en-IN", { hour: '2-digit', minute: '2-digit' }) %>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <form method="POST" action="/messages/<%= chatPartner.id %>">
+    <div class="input-group">
+      <input type="text" name="content" class="form-control message-input" placeholder="Type a message..." required autocomplete="off">
+      <button type="submit" class="btn btn-success btn-send">Send</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Auto scroll to bottom
+  const chatBox = document.getElementById('chatBox');
+  chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+
+<%- include("../partials/footer") %>
