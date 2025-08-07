@@ -3,19 +3,82 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../db");
 
-// Redirect root to login
+const passport = require("passport");
+const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
+
+// ====== GOOGLE STRATEGY SETUP ======
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: "784218402045-287ldcu2bse9rs71jd99svfoelmdi7j6.apps.googleusercontent.com",
+      clientSecret: "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",
+      callbackURL: "http://localhost:3000/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        const name = profile.displayName;
+
+        console.log("Google Profile:", profile);
+
+        // ✅ TEMP: Allow all emails for now — uncomment to restrict later
+        // if (!email.endsWith("@nith.ac.in")) {
+        //   console.log("Blocked non-NITH email:", email);
+        //   return done(null, false);
+        // }
+
+        // Check if user already exists
+        let user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+
+        if (user.rows.length === 0) {
+          // If new, insert user with password '0'
+          const insert = await db.query(
+            "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
+            [name, email, "google-login(32.11n76.48e)"]
+          );
+          user = insert;
+        }
+
+        return done(null, user.rows[0]);
+      } catch (err) {
+        console.error("Google auth error:", err);
+        return done(err, null);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+    done(null, result.rows[0]);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+// ====== MIDDLEWARE SETUP ======
+
+router.use(passport.initialize());
+router.use(passport.session());
+
+// ====== ROUTES ======
+
+// Home redirect
 router.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// ========== REGISTER ==========
-
-// Render Register Page
+// REGISTER
 router.get("/register", (req, res) => {
   res.render("register", { error: null });
 });
 
-// Register User
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -44,14 +107,11 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ========== LOGIN ==========
-
-// Render Login Page
+// LOGIN
 router.get("/login", (req, res) => {
   res.render("login", { error: null });
 });
 
-// Login User
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -72,7 +132,6 @@ router.post("/login", async (req, res) => {
       return res.render("login", { error: "Incorrect password" });
     }
 
-    // Set session
     req.session.user = { id: user.id, name: user.name, email: user.email };
     res.redirect("/books/dashboard");
   } catch (err) {
@@ -81,14 +140,39 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ========== LOGOUT ==========
+// ====== GOOGLE AUTH ROUTES ======
+
+router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    console.log("✅ Google login successful for:", req.user.email);
+
+    // Manually set session for your session-based system
+    req.session.user = {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+    };
+
+    res.redirect("/books/dashboard");
+  }
+);
+
+// ====== LOGOUT ======
+
 router.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.redirect("/login");
+    });
   });
 });
 
-// ========== AUTH MIDDLEWARE ==========
+// ====== PROTECT ROUTES ======
+
 function ensureAuth(req, res, next) {
   if (req.session && req.session.user) {
     return next();
@@ -98,5 +182,5 @@ function ensureAuth(req, res, next) {
 
 module.exports = {
   router,
-  ensureAuth
+  ensureAuth,
 };
