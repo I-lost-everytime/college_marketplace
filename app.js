@@ -81,7 +81,7 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-
+// Google OAuth Callback
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
@@ -93,14 +93,24 @@ app.get(
       email: req.user.email,
     };
 
-    res.redirect("/books/dashboard");
+    res.redirect("/menu");
   }
 );
 
+// ======== MENU ROUTE ========
+app.get("/menu", ensureAuth, async (req, res) => {
+  try {
+    const books = await db.query("SELECT * FROM books ORDER BY id DESC"); // changed created_at -> id
+    res.render("menu", { user: req.user, items: books.rows });
+  } catch (err) {
+    console.error("Menu route error:", err);
+    res.status(500).send("Server Error");
+  }
+});
 
 // Routes
 app.use("/", authRouter);
 app.use("/books", booksRouter);
 app.use("/messages", messagesRouter);
 
-app.listen(3000, () => console.log(" Server started on http://localhost:3000"));
+app.listen(3000, () => console.log("🚀 Server started on http://localhost:3000"));

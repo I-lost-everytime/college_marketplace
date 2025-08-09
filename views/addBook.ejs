@@ -1,99 +1,94 @@
+<!-- addItem.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add Book</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Add New Item</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: #0d0d0d;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #fff;
     }
-
     .form-container {
-      background: #1a1a1a;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
-      max-width: 500px;
-      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
     }
-
-    .form-control,
-    .form-control:focus {
-      background-color: #2c2c2c;
-      color: white;
-      border: 1px solid #555;
-      box-shadow: none;
-    }
-
-    .form-control::placeholder {
-      color: #bbb;
-    }
-
-    .btn-glow {
-      background: linear-gradient(45deg, #7f00ff, #e100ff);
-      color: white;
-      border: none;
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 8px;
-      transition: 0.3s ease;
-      box-shadow: 0 0 8px #e100ff50;
-    }
-
-    .btn-glow:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #e100ffaa;
-    }
-
-    a.back-link {
-      color: #ccc;
-      display: inline-block;
-      margin-top: 1rem;
-      text-align: center;
-      width: 100%;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    a.back-link:hover {
-      color: #e100ff;
+    label {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2 class="text-center mb-4">📚 Add a Book</h2>
-    <form action="/books/add" method="POST">
-      <div class="mb-3">
-        <input type="text" name="title" class="form-control" placeholder="Title" required>
-      </div>
-      <div class="mb-3">
-        <input type="text" name="author" class="form-control" placeholder="Author">
-      </div>
-      <div class="mb-3">
-        <textarea name="description" class="form-control" placeholder="Description" rows="3"></textarea>
-      </div>
-      <div class="mb-3">
-        <input type="number" name="price" class="form-control" placeholder="Price (₹)" required>
-      </div>
-      <div class="mb-3">
-        <input type="text" name="image_url" class="form-control" placeholder="Image URL (optional)">
-      </div>
-      <button type="submit" class="btn-glow">Add Book</button>
-    </form>
-    <a href="/books/dashboard" class="back-link">← Back to Dashboard</a>
+  <div class="container py-5">
+    <div class="form-container">
+      <h2 class="text-center mb-4">Add New Item</h2>
+      <form action="/add-item" method="POST">
+        
+        <div class="mb-3">
+          <label for="name" class="form-label">Item Name</label>
+          <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="category" class="form-label">Category</label>
+          <select class="form-select" id="category" name="category" required>
+            <option value="">-- Select Category --</option>
+            <option value="books">Books</option>
+            <option value="electronics">Electronics</option>
+            <option value="drg_assignments">DRG & Assignments</option>
+            <option value="artworks">Artists & Artworks</option>
+            <option value="thrifting">Thrifting</option>
+            <option value="other">Other Items</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="extraInfo" class="form-label" id="extraInfoLabel">Extra Info</label>
+          <input type="text" class="form-control" id="extraInfo" name="extraInfo">
+        </div>
+
+        <div class="mb-3">
+          <label for="price" class="form-label">Price</label>
+          <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="image_url" class="form-label">Image URL</label>
+          <input type="url" class="form-control" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Add Item</button>
+      </form>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const categorySelect = document.getElementById('category');
+    const extraInfoLabel = document.getElementById('extraInfoLabel');
+
+    categorySelect.addEventListener('change', function() {
+      switch (this.value) {
+        case 'books':
+          extraInfoLabel.textContent = 'Author';
+          break;
+        case 'electronics':
+          extraInfoLabel.textContent = 'Brand';
+          break;
+        case 'drg_assignments':
+          extraInfoLabel.textContent = 'Subject';
+          break;
+        case 'artworks':
+          extraInfoLabel.textContent = 'Art by';
+          break;
+        default:
+          extraInfoLabel.textContent = 'Extra Info';
+      }
+    });
+  </script>
 </body>
 </html>

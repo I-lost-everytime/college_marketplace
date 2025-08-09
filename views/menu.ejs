@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Ensure all images stay square */
+.square-img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+
+/* Card styling for dark glowing theme */
+.glow-card {
+  background: #111;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+/* Gradient glow hover effect */
+.glow-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.6),
+              0 0 30px rgba(0, 255, 255, 0.4),
+              0 0 40px rgba(255, 0, 255, 0.4);
+}
+
+/* Card body background */
+.card-body {
+  background-color: #1a1a1a;
+  border-radius: 0 0 10px 10px;
+}
+
+/* Title and price spacing */
+.card-title, .card-text {
+  margin: 0;
+}
+
+/* Optional neon text glow for title */
+.card-title {
+  text-shadow: 0 0 5px #8a2be2, 0 0 10px #8a2be2;
+}
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+    <a class="navbar-brand fw-bold" href="#">Marketplace</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <form class="d-flex mx-auto" method="GET" action="/search">
+            <input class="form-control me-2 search-bar" type="search" name="q" placeholder="Search items...">
+            <button class="btn btn-outline-light" type="submit">Search</button>
+        </form>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/messages">Messages</a></li>
+            <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+  <div class="row">
+    <% items.forEach(item => { %>
+      <div class="col-6 col-sm-4 col-md-3 mb-4">
+        <div class="card h-100 glow-card">
+          <img src="<%= item.image %>" class="card-img-top square-img" alt="<%= item.name %>">
+          <div class="card-body text-center">
+            <h5 class="card-title text-light"><%= item.name %></h5>
+            <p class="card-text text-info">₹<%= item.price %></p>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

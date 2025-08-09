@@ -93,7 +93,7 @@ router.post("/register", async (req, res) => {
       return res.render("register", { error: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     await db.query(
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
