@@ -11,10 +11,9 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 passport.use(
   new GoogleStrategy(
     {
-      clientID: "784218402045-287ldcu2bse9rs71jd99svfoelmdi7j6.apps.googleusercontent.com",
-      clientSecret: "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",
-      callbackURL: "https://college-marketplace-qe59.onrender.com/auth/google/callback",
-
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL, // This should be different for production
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
