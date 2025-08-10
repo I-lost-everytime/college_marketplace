@@ -13,7 +13,8 @@ passport.use(
     {
       clientID: "784218402045-287ldcu2bse9rs71jd99svfoelmdi7j6.apps.googleusercontent.com",
       clientSecret: "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",
-      callbackURL: "http://localhost:3000/auth/google/callback",
+      callbackURL: "https://college-marketplace-qe59.onrender.com/auth/google/callback",
+
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
