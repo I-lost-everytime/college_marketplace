@@ -19,6 +19,7 @@ passport.use(
       try {
         const email = profile.emails[0].value;
         const name = profile.displayName;
+        const photo = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
 
         console.log("Google Profile:", profile);
 
@@ -32,12 +33,18 @@ passport.use(
         let user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 
         if (user.rows.length === 0) {
-          // If new, insert user with password '0'
+          // Insert new user with Google profile photo
           const insert = await db.query(
-            "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
-            [name, email, "google-login(32.11n76.48e)"]
+            "INSERT INTO users (name, email, password, profile_pic) VALUES ($1, $2, $3, $4) RETURNING *",
+            [name, email, "google-login(32.11n76.48e)", photo]
           );
           user = insert;
+        } else {
+          // Update photo if changed
+          if (photo && user.rows[0].profile_pic !== photo) {
+            await db.query("UPDATE users SET profile_pic = $1 WHERE id = $2", [photo, user.rows[0].id]);
+            user.rows[0].profile_pic = photo;
+          }
         }
 
         return done(null, user.rows[0]);
@@ -133,7 +140,7 @@ router.post("/login", async (req, res) => {
     }
 
     req.session.user = { id: user.id, name: user.name, email: user.email };
-    res.redirect("/books/dashboard");
+    res.redirect("/menu");
   } catch (err) {
     console.error("Login error:", err);
     res.render("login", { error: "Login failed. Try again." });
@@ -157,7 +164,7 @@ router.get(
       email: req.user.email,
     };
 
-    res.redirect("/books/dashboard");
+    res.redirect("/menu");
   }
 );
 

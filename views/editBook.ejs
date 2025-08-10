@@ -1,62 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Edit Book</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-     body, h1, h2, h3, h4, h5, h6, p, label, input, textarea, select, option, button {
-  color: white !important;
-}
-
+    body, input, textarea, select, button, label {
+      color: white !important;
+    }
     body {
       background-color: #0d1117;
-      color: #ffffff;
       font-family: 'Segoe UI', sans-serif;
     }
-
-    .navbar {
-      background-color: #000;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
     .form-control {
       background-color: #1e293b;
       border: 1px solid #444;
-      color: #ffffff;
-    }
-
-    .form-control:focus {
-      border-color: #aaa;
-      box-shadow: 0 0 12px rgba(170, 170, 170, 0.6);
-      background-color: #1e293b;
       color: #fff;
     }
-
+    .form-control:focus {
+      background-color: #1e293b;
+      border-color: #aaa;
+      box-shadow: 0 0 12px rgba(170, 170, 170, 0.6);
+      color: #fff;
+    }
     .btn-primary {
       background-color: #6b7280;
       border: none;
       box-shadow: 0 0 12px rgba(156, 163, 175, 0.6);
     }
-
     .btn-primary:hover {
       background-color: #9ca3af;
       box-shadow: 0 0 15px rgba(156, 163, 175, 0.8);
     }
-
     .form-container {
       max-width: 600px;
-      margin: auto;
+      margin: 2rem auto;
       padding: 2rem;
       background-color: #1e1e2f;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(128, 128, 128, 0.3);
     }
-
     label {
       margin-top: 1rem;
     }
@@ -64,43 +48,151 @@
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-dark mb-4">
-    <div class="container">
-      <span class="navbar-brand mb-0 h1">Edit Book</span>
-    </div>
-  </nav>
+  <div class="form-container">
+    <h2 class="mb-4">Edit Book</h2>
+    <form action="/books/edit/<%= book.id %>" method="POST">
 
-  <!-- Form -->
-  <div class="container">
-    <div class="form-container">
-      <form action="/books/edit/<%= book.id %>" method="POST">
-        <div class="mb-3">
-          <label for="title" class="form-label">Title</label>
-          <input type="text" id="title" name="title" class="form-control" value="<%= book.title %>" required>
-        </div>
-        <div class="mb-3">
-          <label for="author" class="form-label">Author</label>
-          <input type="text" id="author" name="author" class="form-control" value="<%= book.author %>" required>
-        </div>
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <textarea id="description" name="description" class="form-control" required><%= book.description %></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="price" class="form-label">Price (₹)</label>
-          <input type="number" id="price" name="price" class="form-control" value="<%= book.price %>" required>
-        </div>
-        <div class="mb-3">
-          <label for="image_url" class="form-label">Image URL</label>
-          <input type="url" id="image_url" name="image_url" class="form-control" value="<%= book.image_url %>">
-        </div>
-        <button type="submit" class="btn btn-primary w-100 mt-3">Update Book</button>
-      </form>
-    </div>
+      <!-- Title -->
+      <div class="mb-3">
+        <label for="title">Title</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          class="form-control"
+          value="<%= book.title %>"
+          required
+        />
+      </div>
+
+      <!-- Category -->
+      <div class="mb-3">
+        <label for="category">Category</label>
+        <select name="category" id="category" class="form-control" required>
+          <option value="" disabled>-- Select Category --</option>
+          <option value="books" <%= book.category === 'books' ? 'selected' : '' %>>Books</option>
+          <option value="electronics" <%= book.category === 'electronics' ? 'selected' : '' %>>Electronics</option>
+          <option value="drg_assignments" <%= book.category === 'drg_assignments' ? 'selected' : '' %>>DRG & Assignments</option>
+          <option value="artworks" <%= book.category === 'artworks' ? 'selected' : '' %>>Artworks</option>
+          <option value="thrifting" <%= book.category === 'thrifting' ? 'selected' : '' %>>Thrifting</option>
+          <option value="other" <%= book.category === 'other' ? 'selected' : '' %>>Other</option>
+        </select>
+      </div>
+
+      <!-- Extra Info (like author, brand, size, artist etc.) -->
+      <div class="mb-3">
+        <label for="extraInfo" id="extraInfoLabel">Author</label>
+        <input
+          type="text"
+          id="extraInfo"
+          name="extraInfo"
+          class="form-control"
+          value="<%= book.extraInfo || book.author %>"
+          placeholder="Author Name"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          class="form-control"
+          rows="3"
+          required
+        ><%= book.description %></textarea>
+      </div>
+
+      <!-- Price -->
+      <div class="mb-3">
+        <label for="price">Price (₹)</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          class="form-control"
+          value="<%= book.price %>"
+          required
+        />
+      </div>
+
+      <!-- Rent per day (optional) -->
+      <div class="mb-3">
+        <label for="rent_per_day">Rent per day (₹) - Optional</label>
+        <input
+          type="number"
+          id="rent_per_day"
+          name="rent_per_day"
+          class="form-control"
+          value="<%= book.rent_per_day || '' %>"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      <!-- Image URL -->
+      <div class="mb-3">
+        <label for="image_url">Image URL</label>
+        <input
+          type="url"
+          id="image_url"
+          name="image_url"
+          class="form-control"
+          value="<%= book.image_url %>"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 mt-3">Update Book</button>
+    </form>
   </div>
 
-  <!-- Bootstrap JS -->
+  <script>
+    const categorySelect = document.getElementById('category');
+    const extraInfoInput = document.getElementById('extraInfo');
+    const extraInfoLabel = document.getElementById('extraInfoLabel');
+
+    function updateExtraInfoField() {
+      let placeholder = 'Author Name';
+      let label = 'Author';
+
+      switch(categorySelect.value) {
+        case 'books':
+          placeholder = 'Author Name';
+          label = 'Author';
+          break;
+        case 'electronics':
+          placeholder = 'Brand Name';
+          label = 'Brand';
+          break;
+        case 'drg_assignments':
+          placeholder = 'Wingman Info';
+          label = 'Wingman';
+          break;
+        case 'artworks':
+          placeholder = 'Artist Name';
+          label = 'Artist';
+          break;
+        case 'thrifting':
+          placeholder = 'Size (e.g. M, L, 10, 32)';
+          label = 'Size';
+          break;
+        case 'other':
+          placeholder = 'Additional Info';
+          label = 'Additional Info';
+          break;
+      }
+
+      extraInfoInput.placeholder = placeholder;
+      extraInfoLabel.textContent = label;
+    }
+
+    categorySelect.addEventListener('change', updateExtraInfoField);
+
+    // Initialize on page load
+    updateExtraInfoField();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

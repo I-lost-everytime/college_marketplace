@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - <%= user.name %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.6s ease-in-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'pulse-slow': 'pulse 3s infinite',
+            'shimmer': 'shimmer 2s infinite'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            shimmer: {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(100%)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 text-white">
+  
+  <!-- Modern Navbar -->
+  <nav class="backdrop-blur-md bg-slate-900/80 border-b border-slate-700/50 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo/Brand -->
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user text-white text-sm"></i>
+          </div>
+          <span class="text-xl font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <%= user.name %>
+          </span>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="flex items-center space-x-3">
+          <a href="/menu" 
+             class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 transition-all duration-300 hover:scale-105">
+            <i class="fas fa-tachometer-alt text-purple-400"></i>
+            <span class="hidden sm:inline">Menu</span>
+          </a>
+          <a href="/books/add" 
+             class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-lg">
+            <i class="fas fa-plus"></i>
+            <span class="hidden sm:inline">Add Book</span>
+          </a>
+          <a href="/logout" 
+             class="flex items-center space-x-2 px-4 py-2 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500 transition-all duration-300">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="hidden sm:inline">Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Profile Header Section -->
+    <div class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-3xl p-8 mb-8 border border-slate-700/50 animate-fade-in">
+      <div class="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
+        
+        <!-- Profile Image -->
+        <div class="relative group">
+          <% 
+            const fallbackImgs = [
+              'https://i.pravatar.cc/200?img=1',
+              'https://i.pravatar.cc/200?img=2',
+              'https://i.pravatar.cc/200?img=3',
+              'https://i.pravatar.cc/200?img=4',
+              'https://i.pravatar.cc/200?img=5'
+            ];
+            let profilePic = user.photo ? (user.photo + '?sz=200') : fallbackImgs[Math.floor(Math.random() * fallbackImgs.length)];
+          %>
+          <div class="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 p-1">
+            <img src="<%= profilePic %>" 
+                 alt="Profile Picture" 
+                 class="w-full h-full rounded-full object-cover border-4 border-slate-800 group-hover:scale-105 transition-transform duration-300"
+                 onerror="this.onerror=null;this.src='https://via.placeholder.com/200/8B5CF6/FFFFFF?text=<%= user.name.charAt(0) %>';">
+          </div>
+          <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-slate-800 animate-pulse-slow"></div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="flex-1 text-center lg:text-left">
+          <h1 class="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+            <%= user.name %>
+          </h1>
+          
+          <div class="space-y-3 mb-6">
+            <div class="flex items-center justify-center lg:justify-start space-x-3 text-slate-300">
+              <i class="fas fa-envelope text-purple-400"></i>
+              <span class="text-lg"><%= user.email %></span>
+            </div>
+            
+            <% if (user.college) { %>
+              <div class="flex items-center justify-center lg:justify-start space-x-3 text-slate-300">
+                <i class="fas fa-graduation-cap text-purple-400"></i>
+                <span class="text-lg"><%= user.college %></span>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Badges -->
+          <div class="flex flex-wrap justify-center lg:justify-start gap-3">
+            <span class="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full border border-purple-500/30 text-purple-300 text-sm flex items-center space-x-2">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Joined <%= new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></span>
+            </span>
+            <span class="px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full border border-green-500/30 text-green-300 text-sm flex items-center space-x-2">
+              <i class="fas fa-check-circle"></i>
+              <span>Verified</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-slide-up">
+      <div class="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:scale-105">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <i class="fas fa-book text-white"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-bold text-white"><%= listedBooks.length %></div>
+            <div class="text-slate-400">Listed Books</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-sm rounded-2xl p-6 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:scale-105">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <i class="fas fa-eye text-white"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-bold text-white">
+              <% const totalViews = listedBooks.reduce((sum, book) => sum + (book.views || 0), 0); %>
+              <%= totalViews || 0 %>
+            </div>
+            <div class="text-slate-400">Total Views</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-sm rounded-2xl p-6 border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:scale-105">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+            <i class="fas fa-rupee-sign text-white"></i>
+          </div>
+          <div>
+            <div class="text-3xl font-bold text-white">
+              <% const avgPrice = listedBooks.length > 0 ? Math.round(listedBooks.reduce((sum, book) => sum + parseFloat(book.price), 0) / listedBooks.length) : 0; %>
+              ₹<%= avgPrice %>
+            </div>
+            <div class="text-slate-400">Avg. Price</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Books Section -->
+    <div class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm rounded-3xl border border-slate-700/50 animate-fade-in">
+      
+      <!-- Section Header -->
+      <div class="p-8 border-b border-slate-700/50">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+              <i class="fas fa-books text-white"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-white">Your Listed Books</h2>
+              <p class="text-slate-400"><%= listedBooks.length %> books in your collection</p>
+            </div>
+          </div>
+          
+          <% if (listedBooks.length > 0) { %>
+            <a href="/books/add" 
+               class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-lg flex items-center space-x-2">
+              <i class="fas fa-plus"></i>
+              <span>Add More</span>
+            </a>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Books Grid or Empty State -->
+      <div class="p-8">
+        <% if (listedBooks.length === 0) { %>
+          <!-- Empty State -->
+          <div class="text-center py-16">
+            <div class="w-24 h-24 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-book-open text-4xl text-purple-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">No books listed yet</h3>
+            <p class="text-slate-400 mb-8 max-w-md mx-auto">Start building your marketplace presence by adding your first book and connect with potential buyers!</p>
+            <a href="/books/add" 
+               class="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 shadow-lg text-lg">
+              <i class="fas fa-plus"></i>
+              <span>Add Your First Book</span>
+            </a>
+          </div>
+        <% } else { %>
+          <!-- Books Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <% listedBooks.forEach((book, index) => { %>
+              <div class="group bg-gradient-to-br from-slate-800/50 to-slate-700/50 rounded-2xl border border-slate-700/50 hover:border-purple-500/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden animate-fade-in" 
+                   data-delay="<%= index * 0.1 %>">
+                
+                <!-- Book Image -->
+                <div class="relative overflow-hidden">
+                  <% if (book.image_url) { %>
+                    <img src="<%= book.image_url %>" 
+                         alt="<%= book.title %>" 
+                         class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                  <% } else { %>
+                    <div class="w-full h-48 bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center">
+                      <i class="fas fa-book text-4xl text-slate-400"></i>
+                    </div>
+                  <% } %>
+                  
+                  <!-- Status Badge -->
+                  <div class="absolute top-4 right-4">
+                    <span class="px-3 py-1 bg-green-500/90 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                      Active
+                    </span>
+                  </div>
+                  
+                  <!-- Views Badge -->
+                  <div class="absolute bottom-4 left-4">
+                    <span class="px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full text-white text-sm flex items-center space-x-1">
+                      <i class="fas fa-eye text-xs"></i>
+                      <span><%= book.views || 0 %></span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Book Details -->
+                <div class="p-6">
+                  <h3 class="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors duration-300 line-clamp-1">
+                    <%= book.title %>
+                  </h3>
+                  
+                  <p class="text-slate-400 text-sm mb-3 flex items-center">
+                    <i class="fas fa-user text-xs mr-2"></i>
+                    by <%= book.author %>
+                  </p>
+                  
+                  <p class="text-slate-300 text-sm mb-4 line-clamp-2">
+                    <%= book.description %>
+                  </p>
+
+                  <!-- Price -->
+                  <div class="mb-6">
+                    <span class="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                      ₹<%= book.price %>
+                    </span>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex items-center space-x-2">
+                    <a href="/books/edit/<%= book.id %>" 
+                       class="flex-1 py-2 px-4 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 hover:border-yellow-500/50 rounded-xl text-yellow-400 text-center transition-all duration-300 flex items-center justify-center space-x-2">
+                      <i class="fas fa-edit text-sm"></i>
+                      <span class="text-sm font-medium">Edit</span>
+                    </a>
+                    
+                    <button onclick="copyBookLink('<%= book.id %>')" 
+                            class="py-2 px-4 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 hover:border-blue-500/50 rounded-xl text-blue-400 transition-all duration-300">
+                      <i class="fas fa-share text-sm"></i>
+                    </button>
+                    
+                    <form action="/books/delete/<%= book.id %>" method="POST" class="inline" 
+                          onsubmit="return confirm('Are you sure you want to delete this book?')">
+                      <button type="submit" 
+                              class="py-2 px-4 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 rounded-xl text-red-400 transition-all duration-300">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+      <i class="fas fa-check-circle"></i>
+      <span>Book link copied to clipboard!</span>
+    </div>
+  </div>
+
+  <script>
+    // Copy book link functionality
+    function copyBookLink(bookId) {
+      const url = window.location.origin + '/books/' + bookId;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast();
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+          fallbackCopy(url);
+        });
+      } else {
+        fallbackCopy(url);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast();
+      } catch (err) {
+        console.error('Fallback copy failed: ', err);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.remove('translate-x-full');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+      }, 3000);
+    }
+
+    // Animate elements on scroll
+    function animateOnScroll() {
+      const elements = document.querySelectorAll('[class*="animate-"]');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.animationPlayState = 'running';
+          }
+        });
+      }, { threshold: 0.1 });
+
+      elements.forEach(el => {
+        el.style.animationPlayState = 'paused';
+        observer.observe(el);
+      });
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      animateOnScroll();
+      
+      // Add stagger animation to book cards
+      const bookCards = document.querySelectorAll('.grid > div[data-delay]');
+      bookCards.forEach((card) => {
+        const delay = parseFloat(card.dataset.delay);
+        card.style.animationDelay = `${delay}s`;
+        card.classList.add('animate-fade-in');
+      });
+    });
+
+    // Add parallax effect to header
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      const parallax = document.querySelector('.bg-gradient-to-r.from-slate-800\/50');
+      if (parallax) {
+        parallax.style.transform = `translateY(${scrolled * 0.1}px)`;
+      }
+    });
+  </script>
+</body>
+</html>

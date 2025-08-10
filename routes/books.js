@@ -42,18 +42,52 @@ router.get("/add", ensureAuth, (req, res) => {
 
 // Handle Add Book POST
 router.post("/add", ensureAuth, async (req, res) => {
-  const { title, author, description, price, image_url } = req.body;
+  const {
+    title,
+    author,
+    description,
+    price,
+    image_url,
+    tags,
+    category,
+    rent_per_day,
+    brand,
+    size,
+    art_by,
+    wingman
+  } = req.body;
+
   try {
     await db.query(
-      "INSERT INTO books (title, author, description, price, image_url, user_id) VALUES ($1, $2, $3, $4, $5, $6)",
-      [title, author, description, price, image_url, req.session.user.id]
+      `INSERT INTO books
+        (title, author, description, price, image_url, user_id, tags, category, rent_per_day, brand, size, art_by, wingman)
+      VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [
+        title,
+        author,
+        description,
+        price,
+        image_url,
+        req.session.user.id,
+        tags ? tags.split(',').map(tag => tag.trim()) : null, // Convert comma-separated string to array
+        category,
+        rent_per_day || null,
+        brand,
+        size,
+        art_by,
+        wingman
+      ]
     );
+
     res.redirect("/books/dashboard");
-  } catch (err) {
-    console.error(err);
-    res.send("Error adding book");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error adding book");
   }
 });
+
+
 // Delete Book
 router.post("/delete/:id", ensureAuth, async (req, res) => {
   const bookId = req.params.id;
@@ -67,7 +101,7 @@ router.post("/delete/:id", ensureAuth, async (req, res) => {
     }
 
     await db.query("DELETE FROM books WHERE id = $1", [bookId]);
-    res.redirect("/books/dashboard");
+    res.redirect("/menu");
   } catch (err) {
     console.error(err);
     res.send("Error deleting book");
@@ -110,7 +144,7 @@ router.post("/edit/:id", ensureAuth, async (req, res) => {
       [title, author, description, price, image_url, bookId]
     );
 
-    res.redirect("/books/dashboard");
+    res.redirect("/menu");
   } catch (err) {
     console.error(err);
     res.send("Error updating book");
