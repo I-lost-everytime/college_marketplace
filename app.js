@@ -25,7 +25,7 @@ app.set("view engine", "ejs");
 // ===== Session =====
 app.use(
   session({
-    store: new pgSession({ pool: db.pool }),
+    store: new pgSession({ pool: pool }),
     secret: process.env.SESSION_SECRET || "secret-key",
     resave: false,
     saveUninitialized: false,
