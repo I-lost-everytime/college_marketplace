@@ -7,7 +7,7 @@ require("dotenv").config();
 const passport = require("passport");
 const http = require("http");
 const { Server } = require("socket.io");
-const db = require("./db");
+const pool = require("./db");
 
 const { router: authRouter, ensureAuth } = require("./routes/auth");
 const booksRouter = require("./routes/books");
