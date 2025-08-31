@@ -1,65 +1,34 @@
+// routes/auth.js
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const db = require("../db");
-
 const passport = require("passport");
-const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
+const LocalStrategy = require("passport-local").Strategy;
+const mailer = require("./mailer.js");
+const sendOTP = mailer.sendOTP;
 
-// ====== GOOGLE STRATEGY SETUP ======
-
+// ================= PASSPORT CONFIG =================
 passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL, // This should be different for production
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails[0].value;
-        const name = profile.displayName;
-        const photo = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
+  new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
+    try {
+      const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+      const user = result.rows[0];
 
-        console.log("Google Profile:", profile);
+      if (!user) return done(null, false, { message: "No user found" });
+      if (!user.is_verified) return done(null, false, { message: "Please verify your email first" });
 
-        // ✅ TEMP: Allow all emails for now — uncomment to restrict later
-        // if (!email.endsWith("@nith.ac.in")) {
-        //   console.log("Blocked non-NITH email:", email);
-        //   return done(null, false);
-        // }
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) return done(null, false, { message: "Invalid password" });
 
-        // Check if user already exists
-        let user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-
-        if (user.rows.length === 0) {
-          // Insert new user with Google profile photo
-          const insert = await db.query(
-            "INSERT INTO users (name, email, password, profile_pic) VALUES ($1, $2, $3, $4) RETURNING *",
-            [name, email, "google-login(32.11n76.48e)", photo]
-          );
-          user = insert;
-        } else {
-          // Update photo if changed
-          if (photo && user.rows[0].profile_pic !== photo) {
-            await db.query("UPDATE users SET profile_pic = $1 WHERE id = $2", [photo, user.rows[0].id]);
-            user.rows[0].profile_pic = photo;
-          }
-        }
-
-        return done(null, user.rows[0]);
-      } catch (err) {
-        console.error("Google auth error:", err);
-        return done(err, null);
-      }
+      return done(null, user);
+    } catch (err) {
+      return done(err);
     }
-  )
+  })
 );
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
+passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
   try {
     const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
@@ -69,19 +38,18 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// ====== MIDDLEWARE SETUP ======
-
-router.use(passport.initialize());
-router.use(passport.session());
-
-// ====== ROUTES ======
-
-// Home redirect
+// ================= HOME REDIRECT =================
 router.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// REGISTER
+/// verify otp
+router.get("/verify-otp", (req, res) => {
+  const { email } = req.query;
+  res.render("verify_otp", { email, error: null });
+});
+
+// ================= REGISTER =================
 router.get("/register", (req, res) => {
   res.render("register", { error: null });
 });
@@ -95,99 +63,88 @@ router.post("/register", async (req, res) => {
 
   try {
     const userCheck = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-
     if (userCheck.rows.length > 0) {
       return res.render("register", { error: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10); 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     await db.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-      [name, email, hashedPassword]
+      "INSERT INTO users (name, email, password, is_verified, otp_code, otp_expires) VALUES ($1, $2, $3, $4, $5, $6)",
+      [name, email, hashedPassword, false, otp, otpExpires]
     );
 
-    res.redirect("/login");
+    await sendOTP(email, otp);
+
+res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`);
   } catch (err) {
     console.error("Register error:", err);
     res.render("register", { error: "Registration failed. Try again." });
   }
 });
 
-// LOGIN
-router.get("/login", (req, res) => {
-  res.render("login", { error: null });
-});
-
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.render("login", { error: "All fields are required" });
-  }
+// ================= VERIFY OTP =================
+router.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
     const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
     const user = result.rows[0];
 
-    if (!user) {
-      return res.render("login", { error: "Invalid email" });
+    if (!user) return res.render("verify_otp", { email, error: "User not found" });
+    if (user.is_verified) return res.redirect("/login");
+
+    if (user.otp_code !== otp || new Date() > user.otp_expires) {
+      return res.render("verify_otp", { email, error: "Invalid or expired OTP" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.render("login", { error: "Incorrect password" });
-    }
+    await db.query(
+      "UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE email = $1",
+      [email]
+    );
 
-    req.session.user = { id: user.id, name: user.name, email: user.email };
-    res.redirect("/menu");
+    res.redirect("/login");
   } catch (err) {
-    console.error("Login error:", err);
-    res.render("login", { error: "Login failed. Try again." });
+    console.error("OTP verify error:", err);
+    res.render("verify_otp", { email, error: "Verification failed" });
   }
 });
 
-// ====== GOOGLE AUTH ROUTES ======
+// ================= LOGIN =================
+router.get("/login", (req, res) => {
+  res.render("login", { error: null });
+});
 
-router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    console.log("✅ Google login successful for:", req.user.email);
-
-    // Manually set session for your session-based system
-    req.session.user = {
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-    };
-
-    res.redirect("/menu");
-  }
+router.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/menu",
+    failureRedirect: "/login",
+    failureFlash: true,
+    successFlash: "Welcome back!"
+  })
 );
 
-// ====== LOGOUT ======
-
+// ================= LOGOUT =================
 router.get("/logout", (req, res) => {
   req.logout(() => {
-    req.session.destroy(() => {
-      res.redirect("/login");
-    });
+    res.redirect("/login");
   });
 });
 
-// ====== PROTECT ROUTES ======
-
+// ================= PROTECT ROUTES =================
 function ensureAuth(req, res, next) {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
   if (req.session && req.session.user) {
     return next();
   }
   res.redirect("/login");
 }
 
-module.exports = {
-  router,
-  ensureAuth,
-};
+
+module.exports = { router, ensureAuth };

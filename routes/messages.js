@@ -4,13 +4,25 @@ const db = require('../db');
 
 // Ensure user is authenticated
 function ensureAuth(req, res, next) {
-  if (req.session && req.session.user) return next();
-  res.redirect('/login');
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  if (req.session && req.session.user) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
+// Helper to get the current user (works with both Passport and manual session)
+function getCurrentUser(req) {
+  return req.user || req.session.user;
 }
 
 // View all chat threads (users the current user has messaged)
 router.get("/", ensureAuth, async (req, res) => {
-  const userId = req.session.user.id;
+  const currentUser = getCurrentUser(req);
+  const userId = currentUser.id;
+
   try {
     const result = await db.query(
       `
@@ -32,7 +44,7 @@ router.get("/", ensureAuth, async (req, res) => {
 
     res.render("messages/inbox", {
       users: result.rows,
-      user: req.session.user,
+      user: currentUser,
     });
   } catch (err) {
     console.error("Inbox error:", err);
@@ -40,9 +52,10 @@ router.get("/", ensureAuth, async (req, res) => {
   }
 });
 
-/// View chat with a specific user
+// View chat with a specific user
 router.get("/:userId", ensureAuth, async (req, res) => {
-  const myId = req.session.user.id;
+  const currentUser = getCurrentUser(req);
+  const myId = currentUser.id;
   const userId = parseInt(req.params.userId);
 
   try {
@@ -54,14 +67,17 @@ router.get("/:userId", ensureAuth, async (req, res) => {
       [myId, userId]
     );
 
-    const userResult = await db.query("SELECT id, name FROM users WHERE id = $1", [userId]);
+    const userResult = await db.query(
+      "SELECT id, name FROM users WHERE id = $1",
+      [userId]
+    );
     const chatPartner = userResult.rows[0];
 
     res.render("messages/chat", {
-      user: req.session.user,
+      user: currentUser,
       messages: messages.rows,
       chatPartner,
-      userId: chatPartner.id, // Now userId is defined for the form
+      userId: chatPartner.id,
     });
   } catch (err) {
     console.error("Chat error:", err);
@@ -69,10 +85,10 @@ router.get("/:userId", ensureAuth, async (req, res) => {
   }
 });
 
-
 // Send message
 router.post("/:userId", ensureAuth, async (req, res) => {
-  const senderId = req.session.user.id;
+  const currentUser = getCurrentUser(req);
+  const senderId = currentUser.id;
   const receiverId = parseInt(req.params.userId);
   const { content } = req.body;
 
