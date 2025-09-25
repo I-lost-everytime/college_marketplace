@@ -1,39 +1,27 @@
 require("dotenv").config();
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_FROM = process.env.RESEND_FROM_EMAIL; // verified sender email
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
-// ✅ Keep same function signature
+const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
 async function sendOTP(email, otp) {
-  const mailData = {
-    from: RESEND_FROM,
-    to: email,
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail({
+    to: [{ email }],
+    sender: { name: process.env.BREVO_FROM_NAME, email: process.env.BREVO_FROM_EMAIL },
     subject: "Your OTP for College Marketplace",
-    html: `<p>Hello, your OTP is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>`,
-    text: `Hello, your OTP is: ${otp}. It is valid for 5 minutes.`, // optional fallback
-  };
+    htmlContent: `<p>Hello, your OTP is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>`,
+    textContent: `Hello, your OTP is: ${otp}. It is valid for 5 minutes.`,
+  });
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(mailData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("❌ Failed to send OTP:", data);
-      return false;
-    }
-
-    console.log("✅ OTP sent to:", email, "Resend ID:", data.id);
+    await tranEmailApi.sendTransacEmail(sendSmtpEmail);
+    console.log("✅ OTP sent to:", email);
     return true;
   } catch (error) {
-    console.error("❌ Error sending OTP:", error);
+    console.error("❌ Error sending OTP:", error.response?.body || error);
     return false;
   }
 }
