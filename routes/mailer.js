@@ -1,5 +1,3 @@
-// mailer.js
-const fetch = require("node-fetch"); // not needed if using Node 18+
 require("dotenv").config();
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -12,6 +10,7 @@ async function sendOTP(email, otp) {
     to: email,
     subject: "Your OTP for College Marketplace",
     html: `<p>Hello, your OTP is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>`,
+    text: `Hello, your OTP is: ${otp}. It is valid for 5 minutes.`, // optional fallback
   };
 
   try {
@@ -31,7 +30,7 @@ async function sendOTP(email, otp) {
       return false;
     }
 
-    console.log("✅ OTP sent to:", email);
+    console.log("✅ OTP sent to:", email, "Resend ID:", data.id);
     return true;
   } catch (error) {
     console.error("❌ Error sending OTP:", error);
@@ -40,5 +39,3 @@ async function sendOTP(email, otp) {
 }
 
 module.exports = { sendOTP };
-
-
