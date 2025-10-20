@@ -5,8 +5,6 @@ const bcrypt = require("bcryptjs");
 const db = require("../db");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const mailer = require("./mailer.js");
-const sendOTP = mailer.sendOTP;
 
 // ================= PASSPORT CONFIG =================
 passport.use(
@@ -16,7 +14,6 @@ passport.use(
       const user = result.rows[0];
 
       if (!user) return done(null, false, { message: "No user found" });
-      if (!user.is_verified) return done(null, false, { message: "Please verify your email first" });
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) return done(null, false, { message: "Invalid password" });
@@ -43,12 +40,6 @@ router.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-/// verify otp
-router.get("/verify-otp", (req, res) => {
-  const { email } = req.query;
-  res.render("verify_otp", { email, error: null });
-});
-
 // ================= REGISTER =================
 router.get("/register", (req, res) => {
   res.render("register", { error: null });
@@ -69,47 +60,15 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
     await db.query(
-      "INSERT INTO users (name, email, password, is_verified, otp_code, otp_expires) VALUES ($1, $2, $3, $4, $5, $6)",
-      [name, email, hashedPassword, false, otp, otpExpires]
-    );
-
-    await sendOTP(email, otp);
-
-res.redirect(`/verify-otp?email=${encodeURIComponent(email)}`);
-  } catch (err) {
-    console.error("Register error:", err);
-    res.render("register", { error: "Registration failed. Try again." });
-  }
-});
-
-// ================= VERIFY OTP =================
-router.post("/verify-otp", async (req, res) => {
-  const { email, otp } = req.body;
-
-  try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
-    const user = result.rows[0];
-
-    if (!user) return res.render("verify_otp", { email, error: "User not found" });
-    if (user.is_verified) return res.redirect("/login");
-
-    if (user.otp_code !== otp || new Date() > user.otp_expires) {
-      return res.render("verify_otp", { email, error: "Invalid or expired OTP" });
-    }
-
-    await db.query(
-      "UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE email = $1",
-      [email]
+      "INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, $4)",
+      [name, email, hashedPassword, true] // Mark as verified by default
     );
 
     res.redirect("/login");
   } catch (err) {
-    console.error("OTP verify error:", err);
-    res.render("verify_otp", { email, error: "Verification failed" });
+    console.error("Register error:", err);
+    res.render("register", { error: "Registration failed. Try again." });
   }
 });
 
@@ -145,6 +104,5 @@ function ensureAuth(req, res, next) {
   }
   res.redirect("/login");
 }
-
 
 module.exports = { router, ensureAuth };
