@@ -9,6 +9,8 @@
     padding: 15px;
     margin-bottom: 15px;
     border: 1px solid #444;
+    display: flex;
+    flex-direction: column;
   }
 
   .message {
@@ -18,6 +20,8 @@
     margin-bottom: 10px;
     font-size: 0.95rem;
     word-wrap: break-word;
+    display: inline-block;
+    position: relative;
   }
 
   .sent {
@@ -34,6 +38,16 @@
     margin-right: auto;
   }
 
+  .pending {
+    opacity: 0.6;
+    background-color: #888 !important;
+  }
+
+  .error {
+    background-color: #e74c3c !important;
+    color: white;
+  }
+
   .timestamp {
     font-size: 0.75rem;
     color: #aaa;
@@ -46,47 +60,451 @@
     flex-direction: column;
   }
 
+  .message-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
   .message-input {
     border-radius: 20px;
     padding: 10px 15px;
     border: 1px solid #555;
     background-color: #1e1e1e;
     color: white;
+    flex: 1;
+    margin-right: 0;
+  }
+
+  .emoji-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #aaa;
+    transition: color 0.3s;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .emoji-btn:hover {
+    color: #ffd700;
+    background-color: rgba(255, 255, 255, 0.1);
   }
 
   .btn-send {
     border-radius: 20px;
+    padding: 8px 16px;
+    min-width: 60px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .emoji-picker {
+    position: absolute;
+    bottom: 50px;
+    right: 70px;
+    background: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 10px;
+    padding: 15px;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    max-width: 300px;
+  }
+
+  .emoji-picker.show {
+    display: block;
+  }
+
+  .emoji-categories {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 8px;
+  }
+
+  .emoji-category-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 5px;
+    transition: background 0.3s;
+  }
+
+  .emoji-category-btn:hover,
+  .emoji-category-btn.active {
+    background: #444;
+  }
+
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .emoji-item {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background 0.3s;
+  }
+
+  .emoji-item:hover {
+    background: #444;
+  }
+
+  .connection-status {
+    position: fixed;
+    top: 70px;
+    right: 15px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.8rem;
+    z-index: 999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  .status-connected { background-color: #28a745; }
+  .status-disconnected { background-color: #dc3545; }
+  .status-connecting { background-color: #ffc107; color: #000; }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .message-input-container {
+      gap: 3px;
+    }
+    
+    .emoji-btn {
+      min-width: 32px;
+      height: 32px;
+      font-size: 1rem;
+    }
+    
+    .btn-send {
+      min-width: 50px;
+      height: 32px;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+    }
+    
+    .emoji-picker {
+      right: 10px;
+      max-width: 280px;
+    }
+    
+    .connection-status {
+      top: 60px;
+      right: 10px;
+    }
   }
 </style>
+
+<div id="connectionStatus" class="connection-status status-connecting">
+  Connecting...
+</div>
 
 <div class="container mt-4">
   <h4 class="mb-3 text-light">Chat with <%= chatPartner.name %></h4>
 
-  <div class="chat-box d-flex flex-column" id="chatBox">
+  <div class="chat-box" id="chatBox">
     <% messages.forEach(m => { %>
       <div class="chat-container">
         <div class="message <%= m.sender_id === user.id ? 'sent' : 'received' %>">
           <%= m.content %>
           <div class="timestamp">
-            <%= new Date(m.timestamp).toLocaleString("en-IN", { hour: '2-digit', minute: '2-digit' }) %>
+            <%= new Date(m.created_at || m.timestamp).toLocaleString("en-IN", { hour: '2-digit', minute: '2-digit' }) %>
           </div>
         </div>
       </div>
     <% }) %>
   </div>
 
-  <form method="POST" action="/messages/<%= chatPartner.id %>">
-    <div class="input-group">
-      <input type="text" name="content" class="form-control message-input" placeholder="Type a message..." required autocomplete="off">
-      <button type="submit" class="btn btn-success btn-send">Send</button>
+  <div class="input-group">
+    <div class="message-input-container">
+      <input id="messageInput" type="text" class="form-control message-input" placeholder="Type a message..." autocomplete="off" />
+      <button id="emojiBtn" class="emoji-btn" type="button" title="Add emoji">😊</button>
+      <button id="sendBtn" class="btn btn-success btn-send btn-sm">Send</button>
+      
+      <!-- Emoji Picker -->
+      <div id="emojiPicker" class="emoji-picker">
+        <div class="emoji-categories">
+          <button class="emoji-category-btn active" data-category="smileys">😊</button>
+          <button class="emoji-category-btn" data-category="animals">🐶</button>
+          <button class="emoji-category-btn" data-category="food">🍕</button>
+          <button class="emoji-category-btn" data-category="activities">⚽</button>
+          <button class="emoji-category-btn" data-category="objects">💡</button>
+          <button class="emoji-category-btn" data-category="symbols">❤️</button>
+        </div>
+        <div id="emojiGrid" class="emoji-grid">
+          <!-- Emojis will be populated by JavaScript -->
+        </div>
+      </div>
     </div>
-  </form>
+  </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
-  // Auto scroll to bottom
+  // Emoji data
+  const emojiCategories = {
+    smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏'],
+    animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗'],
+    food: ['🍕', '🍔', '🍟', '🌭', '🥪', '🌮', '🌯', '🥙', '🧆', '🥚', '🍳', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭', '🥪', '🍕', '🍔', '🍟', '🥗', '🥘', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪'],
+    activities: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿'],
+    objects: ['💡', '🔦', '🕯️', '🪔', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '💾', '💿', '📀', '🧮', '🎥', '🎬', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔', '📔', '📕', '📖', '📗'],
+    symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈']
+  };
+
+  const socket = io();
+  
+  const userId = "<%= user.id %>";
+  const partnerId = "<%= chatPartner.id %>";
+  
   const chatBox = document.getElementById('chatBox');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const emojiBtn = document.getElementById('emojiBtn');
+  const emojiPicker = document.getElementById('emojiPicker');
+  const emojiGrid = document.getElementById('emojiGrid');
+  const connectionStatus = document.getElementById('connectionStatus');
+  
+  let isConnected = false;
+  let pendingMessages = new Map();
+  let currentEmojiCategory = 'smileys';
+
+  // Initialize emoji picker
+  function initEmojiPicker() {
+    // Populate emoji grid
+    showEmojiCategory('smileys');
+
+    // Category buttons
+    document.querySelectorAll('.emoji-category-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const category = this.dataset.category;
+        showEmojiCategory(category);
+        
+        // Update active button
+        document.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Show/hide emoji picker
+    emojiBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      emojiPicker.classList.toggle('show');
+    });
+
+    // Hide emoji picker when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+        emojiPicker.classList.remove('show');
+      }
+    });
+  }
+
+  function showEmojiCategory(category) {
+    currentEmojiCategory = category;
+    const emojis = emojiCategories[category] || [];
+    
+    emojiGrid.innerHTML = '';
+    emojis.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.className = 'emoji-item';
+      btn.textContent = emoji;
+      btn.addEventListener('click', function() {
+        insertEmoji(emoji);
+      });
+      emojiGrid.appendChild(btn);
+    });
+  }
+
+  function insertEmoji(emoji) {
+    const cursorPos = messageInput.selectionStart;
+    const textBefore = messageInput.value.substring(0, cursorPos);
+    const textAfter = messageInput.value.substring(cursorPos);
+    
+    messageInput.value = textBefore + emoji + textAfter;
+    messageInput.focus();
+    
+    // Set cursor position after emoji
+    const newPos = cursorPos + emoji.length;
+    messageInput.setSelectionRange(newPos, newPos);
+    
+    // Hide picker
+    emojiPicker.classList.remove('show');
+  }
+
+  // Connection status handling
+  socket.on('connect', function() {
+    //console.log('Connected to server');
+    isConnected = true;
+    connectionStatus.textContent = 'Connected';
+    connectionStatus.className = 'connection-status status-connected';
+    sendBtn.disabled = false;
+    
+    const roomId = getRoomId(userId, partnerId);
+    socket.emit('joinRoom', roomId);
+  });
+
+  socket.on('disconnect', function() {
+    console.log('Disconnected from server');
+    isConnected = false;
+    connectionStatus.textContent = 'Disconnected';
+    connectionStatus.className = 'connection-status status-disconnected';
+    sendBtn.disabled = true;
+  });
+
+  function getRoomId(a, b) {
+    return [a, b].sort().join('_');
+  }
+
+  function generateMessageId() {
+    return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function appendMessage(message, isSent, isPending, isError) {
+    const container = document.createElement('div');
+    container.classList.add('chat-container');
+    container.dataset.messageId = message.tempId || message.id;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message');
+    msgDiv.classList.add(isSent ? 'sent' : 'received');
+    
+    if (isPending) msgDiv.classList.add('pending');
+    if (isError) msgDiv.classList.add('error');
+    
+    msgDiv.innerHTML = message.content; // Use innerHTML to render emojis properly
+
+    const tsDiv = document.createElement('div');
+    tsDiv.classList.add('timestamp');
+    const d = new Date(message.created_at || message.timestamp);
+    tsDiv.textContent = d.toLocaleString("en-IN", { hour: '2-digit', minute: '2-digit' });
+
+    msgDiv.appendChild(tsDiv);
+    container.appendChild(msgDiv);
+    chatBox.appendChild(container);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return container;
+  }
+
+  function updateMessage(tempId, newMessage) {
+    const container = document.querySelector('[data-message-id="' + tempId + '"]');
+    if (container) {
+      const msgDiv = container.querySelector('.message');
+      msgDiv.classList.remove('pending', 'error');
+      container.dataset.messageId = newMessage.id;
+    }
+  }
+
+  function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content || !isConnected) return;
+
+    const tempId = generateMessageId();
+    const message = {
+      tempId: tempId,
+      sender_id: userId,
+      receiver_id: partnerId,
+      content: content,
+      timestamp: new Date().toISOString(),
+    };
+
+    const roomId = getRoomId(userId, partnerId);
+
+    pendingMessages.set(tempId, message);
+    appendMessage(message, true, true, false);
+
+    socket.emit('chatMessage', Object.assign({}, message, { roomId: roomId }));
+
+    messageInput.value = '';
+    messageInput.focus();
+
+    setTimeout(function() {
+      if (pendingMessages.has(tempId)) {
+        console.error('Message timeout:', tempId);
+        pendingMessages.delete(tempId);
+        const container = document.querySelector('[data-message-id="' + tempId + '"]');
+        if (container) {
+          const msgDiv = container.querySelector('.message');
+          msgDiv.classList.remove('pending');
+          msgDiv.classList.add('error');
+        }
+      }
+    }, 10000);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  socket.on('message', function(message) {
+    //console.log('Received message:', message);
+    
+    const pendingMessage = Array.from(pendingMessages.values())
+      .find(function(p) { 
+        return p.content === message.content && 
+               String(p.sender_id) === String(message.sender_id);
+      });
+    
+    if (pendingMessage) {
+      pendingMessages.delete(pendingMessage.tempId);
+      updateMessage(pendingMessage.tempId, message);
+    } else if (String(message.sender_id) !== String(userId)) {
+      appendMessage(message, false, false, false);
+    }
+  });
+
+  socket.on('messageError', function(data) {
+    console.error('Message error:', data);
+    const message = data.originalMessage;
+    
+    if (message.tempId && pendingMessages.has(message.tempId)) {
+      pendingMessages.delete(message.tempId);
+      
+      const container = document.querySelector('[data-message-id="' + message.tempId + '"]');
+      if (container) {
+        const msgDiv = container.querySelector('.message');
+        msgDiv.classList.remove('pending');
+        msgDiv.classList.add('error');
+        msgDiv.title = data.error;
+      }
+    }
+    
+    alert('Failed to send message: ' + data.error);
+  });
+
+  // Initialize everything
+  initEmojiPicker();
   chatBox.scrollTop = chatBox.scrollHeight;
+  messageInput.focus();
 </script>
 
 <%- include("../partials/footer") %>

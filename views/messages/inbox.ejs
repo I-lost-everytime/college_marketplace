@@ -13,12 +13,19 @@
     margin-bottom: 10px;
     border-radius: 10px;
     text-decoration: none;
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     transition: background 0.3s ease;
   }
 
   .chat-user:hover {
     background-color: #333;
+  }
+
+  .chat-user-left {
+    display: flex;
+    flex-direction: column;
   }
 
   .chat-user h5 {
@@ -28,6 +35,27 @@
 
   .chat-user small {
     color: #aaa;
+  }
+
+  .unread-badge {
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 9px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    min-width: 22px;
+    text-align: center;
+  }
+
+  .last-message {
+    color: #bbb;
+    font-size: 0.9rem;
+    margin-top: 3px;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
 
@@ -40,8 +68,15 @@
 
   <% users.forEach(u => { %>
     <a href="/messages/<%= u.user_id %>" class="chat-user">
-      <h5><%= u.name %></h5>
-      <small>Click to view chat</small>
+      <div class="chat-user-left">
+        <h5><%= u.name %></h5>
+        <div class="last-message"><%= u.last_message || "No messages yet." %></div>
+      </div>
+      <div>
+        <% if (u.unread_count > 0) { %>
+          <span class="unread-badge"><%= u.unread_count %></span>
+        <% } %>
+      </div>
     </a>
   <% }) %>
 </div>

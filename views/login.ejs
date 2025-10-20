@@ -3,159 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <title>Login - Book Marketplace</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Custom Glow Styling -->
-  <style>
-    body {
-      background: radial-gradient(circle at top left, #0d1117, #0a0a0a);
-      color: #e6f1ff;
-      font-family: 'Segoe UI', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-
-    .login-box {
-      background-color: #1a1a2e;
-      padding: 2.5rem;
-      border-radius: 20px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 0 25px rgba(0, 229, 255, 0.1);
-      border: 2px solid transparent;
-      transition: 0.4s ease;
-    }
-
-    .login-box:hover {
-      box-shadow: 0 0 35px #00e5ff88;
-      border-color: #00e5ff;
-      transform: scale(1.01);
-    }
-
-    .login-box h2 {
-      color: #00e5ff;
-      text-shadow: 0 0 10px #00e5ff88;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-control {
-      background-color: #2c2f3a;
-      border: 1px solid #444;
-      color: #e6f1ff;
-      transition: 0.3s;
-    }
-
-    .form-control:focus {
-      border-color: #00e5ff;
-      box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-      background-color: #2c2f3a;
-      color: #fff;
-    }
-
-    .form-control::placeholder {
-      color: #aaa;
-    }
-
-    .btn-glow {
-      background: linear-gradient(45deg, #00e5ff, #00bfff);
-      color: #000;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
-      padding: 0.6rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
-    }
-
-    .btn-glow:hover {
-      background: linear-gradient(45deg, #00c4cc, #00aaff);
-      box-shadow: 0 0 18px rgba(0, 229, 255, 0.7);
-      transform: scale(1.03);
-    }
-
-    .text-small {
-      font-size: 0.9rem;
-    }
-
-    .link-glow {
-      color: #00e5ff;
-      transition: 0.2s ease;
-    }
-
-    .link-glow:hover {
-      color: #80faff;
-      text-decoration: underline;
-    }
-
-    .alert-danger {
-      background-color: #ff4c4c;
-      color: #fff;
-      border: none;
-      box-shadow: 0 0 12px rgba(255, 76, 76, 0.5);
-    }
-
-    .floating {
-      animation: float 6s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="login-box shadow-lg floating">
-    <h2>Login to Marketplace</h2>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gray-900">
+  
 
-    <% if (error) { %>
-      <div class="alert alert-danger text-center"><%= error %></div>
-    <% } %>
-
-    <!-- Regular Login Form -->
-    <form action="/login" method="POST" novalidate>
-      <div class="mb-3">
-        <input type="email" name="email" class="form-control" placeholder="Email" required autocomplete="email">
+  <!-- Login Container -->
+  <div class="w-full max-w-md border-2 border-gray-600 pt-8 pb-8 rounded-3xl">
+    <div class="rounded-2xl p-8 space-y-6">
+      <!-- Header -->
+      <div class="text-center space-y-2">
+        <div class="mx-auto w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-white">Login to Marketplace</h1>
       </div>
-      <div class="mb-3">
-        <input type="password" name="password" class="form-control" placeholder="Password" required autocomplete="current-password">
-      </div>
-      <div class="d-grid">
-        <button type="submit" class="btn btn-glow">Login</button>
-      </div>
-    </form>
 
-    <!-- Divider -->
-    <div class="text-center my-3 text-light">
-      <hr style="border-color: #00e5ff; opacity: 0.3;">
-      <span style="background: #1a1a2e; padding: 0 12px; color: #00e5ff;">OR</span>
-    </div>
+      <!-- Error Message (EJS) -->
+      <% if (error) { %>
+        <div class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-center backdrop-blur-sm">
+        <%= error %> 
+      </div>
+        <% } %>
 
-    <!-- Google Login -->
-    <div class="d-grid mb-3">
-      <a href="/auth/google" class="btn btn-danger d-flex align-items-center justify-content-center gap-2">
-        <img src="https://img.icons8.com/color/24/000000/google-logo.png" alt="Google Logo" style="width: 20px;">
+      <!-- Login Form -->
+      <form action="/login" method="POST" class="space-y-4">
+        <!-- Email Field -->
+        <div class="space-y-2">
+          <label for="email" class="block text-sm font-medium text-gray-300">Email Address</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+              </svg>
+            </div>
+            <input 
+              type="email" 
+              name="email" 
+              id="email"
+              class="w-full pl-10 pr-4 py-3 bg-gray-700 border-2 border-gray-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-200" 
+              placeholder="Enter your email" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-2">
+          <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <input 
+              type="password" 
+              name="password" 
+              id="password"
+              class="w-full pl-10 pr-4 py-3 bg-gray-700 border-2 border-gray-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-200" 
+              placeholder="Enter your password" 
+              required 
+              autocomplete="current-password"
+            >
+          </div>
+        </div>
+
+        <!-- Login Button -->
+        <button 
+          type="submit" 
+          class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+        >
+          <span class="flex items-center justify-center space-x-2">
+            <span>Sign In</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+            </svg>
+          </span>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-600"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class=""></span>
+        </div>
+      </div>
+
+      <!-- Google Login -->
+      <a 
+        href="/auth/google" 
+        class="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-500 rounded-full bg-gray-700 hover:bg-gray-600 text-white font-medium transition-colors duration-200"
+      >
+        <img 
+          src="https://img.icons8.com/color/20/000000/google-logo.png" 
+          alt="Google Logo" 
+          class="w-5 h-5 mr-3"
+        >
         Sign in with Google (@nith.ac.in)
       </a>
+
+      <!-- Register Link -->
+      <div class="text-center">
+        <p class="text-gray-400">
+          Don't have an account? 
+          <a 
+            href="/register" 
+            class="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200 hover:underline"
+          >
+            Register here
+          </a>
+        </p>
+      </div>
     </div>
-
-    <!-- Register Link -->
-    <p class="text-center mt-3 text-small text-light">
-      Don't have an account?
-      <a href="/register" class="link-glow">Register</a>
-    </p>
   </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootst
+</body>
+</html>

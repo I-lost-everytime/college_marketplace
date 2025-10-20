@@ -1,106 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Edit Book</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-     body, h1, h2, h3, h4, h5, h6, p, label, input, textarea, select, option, button {
-  color: white !important;
-}
-
-    body {
-      background-color: #0d1117;
-      color: #ffffff;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .navbar {
-      background-color: #000;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .form-control {
-      background-color: #1e293b;
-      border: 1px solid #444;
-      color: #ffffff;
-    }
-
-    .form-control:focus {
-      border-color: #aaa;
-      box-shadow: 0 0 12px rgba(170, 170, 170, 0.6);
-      background-color: #1e293b;
-      color: #fff;
-    }
-
-    .btn-primary {
-      background-color: #6b7280;
-      border: none;
-      box-shadow: 0 0 12px rgba(156, 163, 175, 0.6);
-    }
-
-    .btn-primary:hover {
-      background-color: #9ca3af;
-      box-shadow: 0 0 15px rgba(156, 163, 175, 0.8);
-    }
-
-    .form-container {
-      max-width: 600px;
-      margin: auto;
-      padding: 2rem;
-      background-color: #1e1e2f;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(128, 128, 128, 0.3);
-    }
-
-    label {
-      margin-top: 1rem;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Item</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-gray-900 to-black">
+  
+  <!-- Form Container -->
+  <div class="w-full max-w-sm backdrop-blur-xl bg-gray-900/70 border border-gray-700 shadow-2xl rounded-2xl pt-6 pb-6 transform hover:scale-[1.01] transition duration-300">
+    <div class="rounded-xl p-6 space-y-5">
+      
+      <!-- Header -->
+      <div class="text-center space-y-3">
+        <div class="mx-auto w-12 h-12 bg-gradient-to-tr from-blue-600 to-purple-600 shadow-lg shadow-blue-900/40 rounded-xl flex items-center justify-center text-lg text-white">
+          ✏️
+        </div>
+        <h1 class="text-2xl font-bold text-white tracking-wide">Edit Item</h1>
+        <p class="text-gray-400 text-sm">Update your listing details below</p>
+      </div>
+      
+      <!-- Edit Item Form -->
+      <form action="/books/edit/<%= book.id %>" method="POST" class="space-y-4">
+        
+        <!-- Title Field -->
+        <div class="space-y-1">
+          <label for="title" class="block text-xs font-semibold text-gray-300">Item Title</label>
+          <input 
+            type="text" 
+            name="title" 
+            id="title"
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-600 transition text-sm" 
+            value="<%= book.title %>"
+            required
+          >
+        </div>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-dark mb-4">
-    <div class="container">
-      <span class="navbar-brand mb-0 h1">Edit Book</span>
-    </div>
-  </nav>
+        <!-- Category Field -->
+        <div class="space-y-1">
+          <label for="category" class="block text-xs font-semibold text-gray-300">Category</label>
+          <select 
+            name="category" 
+            id="category" 
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-600 transition text-sm" 
+            required
+          >
+            <option value="" disabled class="bg-gray-900">-- Select Category --</option>
+            <option value="books" <%= book.category === 'books' ? 'selected' : '' %>>Books</option>
+            <option value="electronics" <%= book.category === 'electronics' ? 'selected' : '' %>>Electronics</option>
+            <option value="drg_assignments" <%= book.category === 'drg_assignments' ? 'selected' : '' %>>DRG & Assignments</option>
+            <option value="artworks" <%= book.category === 'artworks' ? 'selected' : '' %>>Artworks</option>
+            <option value="thrifting" <%= book.category === 'thrifting' ? 'selected' : '' %>>Thrifting</option>
+            <option value="other" <%= book.category === 'other' ? 'selected' : '' %>>Other Items</option>
+          </select>
+        </div>
 
-  <!-- Form -->
-  <div class="container">
-    <div class="form-container">
-      <form action="/books/edit/<%= book.id %>" method="POST">
-        <div class="mb-3">
-          <label for="title" class="form-label">Title</label>
-          <input type="text" id="title" name="title" class="form-control" value="<%= book.title %>" required>
+        <!-- Extra Info Field -->
+        <div class="space-y-1">
+          <label for="extraInfo" id="extraInfoLabel" class="block text-xs font-semibold text-gray-300">Additional Info</label>
+          <input 
+            type="text" 
+            name="extraInfo" 
+            id="extraInfo" 
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-600 transition text-sm" 
+            value="<%= book.extraInfo || book.author || '' %>"
+            placeholder="Additional information"
+          >
         </div>
-        <div class="mb-3">
-          <label for="author" class="form-label">Author</label>
-          <input type="text" id="author" name="author" class="form-control" value="<%= book.author %>" required>
+
+        <!-- Description Field -->
+        <div class="space-y-1">
+          <label for="description" class="block text-xs font-semibold text-gray-300">Description</label>
+          <textarea 
+            name="description" 
+            id="description"
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-600 transition text-sm resize-y" 
+            rows="2"
+            required
+          ><%= book.description %></textarea>
         </div>
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <textarea id="description" name="description" class="form-control" required><%= book.description %></textarea>
+
+        <!-- Price Field -->
+        <div class="space-y-1">
+          <label for="price" class="block text-xs font-semibold text-gray-300">Price (₹)</label>
+          <input 
+            type="number" 
+            name="price" 
+            id="price"
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-600 transition text-sm" 
+            value="<%= book.price %>"
+            required
+          >
         </div>
-        <div class="mb-3">
-          <label for="price" class="form-label">Price (₹)</label>
-          <input type="number" id="price" name="price" class="form-control" value="<%= book.price %>" required>
+
+        <!-- Rent Per Day Field -->
+        <div class="space-y-1">
+          <label for="rent_per_day" class="block text-xs font-semibold text-gray-300">Rent per day (₹)</label>
+          <input 
+            type="number" 
+            name="rent_per_day" 
+            id="rent_per_day"
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-600 transition text-sm" 
+            value="<%= book.rent_per_day || '' %>"
+            step="0.01" 
+            min="0"
+          >
         </div>
-        <div class="mb-3">
-          <label for="image_url" class="form-label">Image URL</label>
-          <input type="url" id="image_url" name="image_url" class="form-control" value="<%= book.image_url %>">
+
+        <!-- Image URL Field -->
+        <div class="space-y-1">
+          <label for="image_url" class="block text-xs font-semibold text-gray-300">Image URL</label>
+          <input 
+            type="url" 
+            name="image_url" 
+            id="image_url"
+            class="w-full px-3 py-2 bg-gray-800/60 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-600 transition text-sm" 
+            value="<%= book.image_url || '' %>"
+          >
         </div>
-        <button type="submit" class="btn btn-primary w-100 mt-3">Update Book</button>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-lg shadow-purple-900/40 transition duration-300"
+        >
+          Update Item
+        </button>
       </form>
+
+      <!-- Back Link -->
+      <div class="text-center pt-2">
+        <a 
+          href="/books/dashboard" 
+          class="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200 hover:underline"
+        >
+          ← Back to Dashboard
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const categorySelect = document.getElementById('category');
+    const extraInfoInput = document.getElementById('extraInfo');
+    const extraInfoLabel = document.getElementById('extraInfoLabel');
+
+    function updateExtraInfoField() {
+      let placeholder = 'Additional information';
+      let label = 'Additional Info';
+
+      switch(categorySelect.value) {
+        case 'books': placeholder = 'Author Name'; label = 'Author'; break;
+        case 'electronics': placeholder = 'Brand Name'; label = 'Brand'; break;
+        case 'drg_assignments': placeholder = 'Wingman Info'; label = 'Wingman'; break;
+        case 'artworks': placeholder = 'Artist Name'; label = 'Artist'; break;
+        case 'thrifting': placeholder = 'Size (e.g. M, L, 10, 32)'; label = 'Size'; break;
+      }
+      extraInfoInput.placeholder = placeholder;
+      extraInfoLabel.textContent = label;
+    }
+
+    categorySelect.addEventListener('change', updateExtraInfoField);
+    updateExtraInfoField();
+  </script>
 </body>
 </html>
