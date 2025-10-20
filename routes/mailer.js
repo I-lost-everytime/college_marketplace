@@ -1,45 +1,31 @@
 require("dotenv").config();
-const SibApiV3Sdk = require("sib-api-v3-sdk");
+const { Resend } = require("resend");
 
-// Configure API key
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendOTP(email, otp) {
-  // Debug logs
   console.log("=== DEBUG INFO ===");
-  console.log("API Key loaded:", !!process.env.BREVO_API_KEY);
-  console.log("Sender Name:", process.env.BREVO_FROM_NAME);
-  console.log("Sender Email:", process.env.BREVO_FROM_EMAIL);
+  console.log("API Key loaded:", !!process.env.RESEND_API_KEY);
+  console.log("Sender Email:", process.env.RESEND_FROM_EMAIL);
   console.log("Recipient Email:", email);
   console.log("OTP:", otp);
   console.log("=================");
 
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail({
-    to: [{ email: email }],
-    sender: {
-      email: process.env.BREVO_FROM_EMAIL, // verified sender
-      name: process.env.BREVO_FROM_NAME
-    },
-    subject: "Your OTP for College Marketplace",
-    htmlContent: `<html><body><p>Hello, your OTP is: <strong>${otp}</strong>. It is valid for 5 minutes.</p></body></html>`,
-    textContent: `Hello, your OTP is: ${otp}. It is valid for 5 minutes.`
-  });
-
   try {
-    const response = await tranEmailApi.sendTransacEmail(sendSmtpEmail);
+    const response = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL, // e.g. "College Marketplace <onboarding@resend.dev>"
+      to: email,
+      subject: "Your OTP for College Marketplace",
+      html: `<p>Hello, your OTP is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>`,
+      text: `Hello, your OTP is: ${otp}. It is valid for 5 minutes.`,
+    });
+
     console.log("✅ OTP sent successfully to:", email);
     console.log("Response:", response);
     return true;
   } catch (error) {
-    if (error.response && error.response.body) {
-      console.error("❌ Brevo Error:", JSON.stringify(error.response.body, null, 2));
-    } else {
-      console.error("❌ Unexpected Error:", error);
-    }
+    console.error("❌ Resend Error:", error);
     return false;
   }
 }
